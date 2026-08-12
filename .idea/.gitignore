@@ -10,6 +10,6 @@
 /dataSources.local.xml
 # Sql database
 /data/
-.db
+*.db
 # Excluded folder
 /out/
