@@ -1,4 +1,4 @@
-public record UserInfo(String username, byte[] encryptedPassword, String email) {
+public record UserInfo(String username, String email, byte[] encryptedPassword ) {
 
 	public String emailType() {
 		if (email == null) {

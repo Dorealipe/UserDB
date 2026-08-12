@@ -4,50 +4,55 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class User {
-	private static final ArrayList<User> REGISTERED_USERS = new ArrayList<>();
 	private static final SecretKey SECRET_KEY = EncryptionManager.generateKey();
 	private static final Cipher CIPHER = EncryptionManager.generateCipher();
 
 	private final UserInfo info;
 
+
+
 	public static Boolean userExists(String username) {
-		return REGISTERED_USERS.stream().anyMatch(u -> Objects.equals(u.info.username(), username));
+		return false;
 	}
 
 	public User(String name, String password) {
 		if (userExists(name)) {
 			throw new ExceptionInInitializerError(String.format("User with username \"%s\" already exists.", name));
 		}
-		this.info = new UserInfo(name, EncryptionManager.encrypt(password,SECRET_KEY, CIPHER), null);
-
-
-		REGISTERED_USERS.add(this);
+		this.info = new UserInfo(name, null, EncryptionManager.encrypt(password,SECRET_KEY, CIPHER));
+		Database.insertUser(this.info);
 	}
 
 	public User(String name, String password, String email) {
 		if (userExists(name)) {
 			throw new ExceptionInInitializerError(String.format("User with username \"%s\" already exists.", name));
 		}
-		this.info = new UserInfo(name, EncryptionManager.encrypt(password,SECRET_KEY, CIPHER), email);
-
-
-		REGISTERED_USERS.add(this);
+		this.info = new UserInfo(name, email, EncryptionManager.encrypt(password,SECRET_KEY, CIPHER));
+		Database.insertUser(this.info);
 	}
+
+	/// Used only in logging
+	protected User(UserInfo info) {
+		this.info = info;
+	}
+
+
 
 	public static User logIn(String username, String password) {
 		if (!userExists(username)) {
 			return new User(username, password);
 		}
-		User foundUser = REGISTERED_USERS.stream()
-				.filter(u -> Objects.equals(u.info.username(), username)
-		)
-		.toList().getFirst();
-		if (!Objects.equals(EncryptionManager.decrypt(foundUser.info.encryptedPassword(), SECRET_KEY, CIPHER), password)) {
+		UserInfo found = Database.findUser(username);
+		if (found==null) return null;
+		if (!Objects.equals(EncryptionManager.decrypt(found.encryptedPassword(), SECRET_KEY, CIPHER), password)) {
 			throw new SecurityException("Wrong password");
 		}
-		return foundUser;
+		return new User(found);
 	}
 
+	public String username() {return info.username();}
+	public String email() {return info.email();}
+	public byte[] encryptedPassword() {return info.encryptedPassword();}
 	public String emailType() {
 		return info.emailType();
 	}
