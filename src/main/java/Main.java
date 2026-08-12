@@ -7,10 +7,13 @@ public class Main {
 
 
 
-		User john = User.log("JohnTheBest", "johnbestest_1234");
-		User alice = User.log("xXAliceXx", "10_10_1980_ALICE");
+		User john = User.logIn("JohnTheBest", "johnbestest_1234");
+		User alice = User.logIn("xXAliceXx", "10_10_1980_ALICE");
 		john.printUserInfo();
 		alice.printUserInfo();
+		User dorea = User.logIn("Dorealipe","12A*34b>0");
+		dorea.printUserInfo();
+		System.out.println(john.emailType());
 
 	}
 }

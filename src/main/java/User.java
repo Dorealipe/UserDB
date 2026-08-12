@@ -8,7 +8,7 @@ public class User {
 	private static final SecretKey SECRET_KEY = EncryptionManager.generateKey();
 	private static final Cipher CIPHER = EncryptionManager.generateCipher();
 
-	UserInfo info;
+	private final UserInfo info;
 
 	public static Boolean userExists(String username) {
 		return REGISTERED_USERS.stream().anyMatch(u -> Objects.equals(u.info.username(), username));
@@ -18,7 +18,7 @@ public class User {
 		if (userExists(name)) {
 			throw new ExceptionInInitializerError(String.format("User with username \"%s\" already exists.", name));
 		}
-		this.info = new UserInfo(name, EncryptionManager.encrypt(password,SECRET_KEY, CIPHER), "NotProvided");
+		this.info = new UserInfo(name, EncryptionManager.encrypt(password,SECRET_KEY, CIPHER), null);
 
 
 		REGISTERED_USERS.add(this);
@@ -34,7 +34,7 @@ public class User {
 		REGISTERED_USERS.add(this);
 	}
 
-	public static User log(String username, String password) {
+	public static User logIn(String username, String password) {
 		if (!userExists(username)) {
 			return new User(username, password);
 		}
@@ -46,6 +46,10 @@ public class User {
 			throw new SecurityException("Wrong password");
 		}
 		return foundUser;
+	}
+
+	public String emailType() {
+		return info.emailType();
 	}
 
 
