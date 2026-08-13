@@ -1,7 +1,7 @@
 import java.sql.*;
 
 public class Database {
-	private static final String URL = "jdbc:sqlite:data/users.db";
+	private static final String URL = "jdbc:sqlite:data/testUsers.db";
 
 
 	public static Connection connect() throws SQLException {
@@ -14,7 +14,8 @@ public class Database {
             CREATE TABLE IF NOT EXISTS users (
                 username TEXT PRIMARY KEY,
                 email TEXT,
-                encrypted_password BLOB
+                password_hash TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """;
 
@@ -26,15 +27,15 @@ public class Database {
 		}
 	}
 
-	public static void insertUser(String username, String email, byte[] encryptedPassword) {
-		String sql = "INSERT INTO users (username, email, encrypted_password) VALUES (?, ?, ?)";
+	public static void insertUser(String username, String email, String passwordHash) {
+		String sql = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
 
 		try (Connection conn = connect();
 		     PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setString(1, username);
 			stmt.setString(2, email);
-			stmt.setBytes(3, encryptedPassword);
+			stmt.setString(3, passwordHash);
 
 			stmt.executeUpdate(); // executeUpdate() = INSERT/UPDATE/DELETE
 
@@ -56,7 +57,8 @@ public class Database {
 					return new UserInfo(
 							rs.getString("username"),
 							rs.getString("email"),
-							rs.getBytes("encrypted_password")
+							rs.getString("password_hash"),
+							rs.getString("created_at")
 					);
 				}
 				return null;
@@ -73,10 +75,10 @@ public class Database {
 	}
 
 	public static void insertUser(User user) {
-		insertUser(user.username(),user.email(),user.encryptedPassword());
+		insertUser(user.username(),user.email(),user.passwordHash());
 	}
 
 	public static void insertUser(UserInfo info) {
-		insertUser(info.username(),info.email(),info.encryptedPassword());
+		insertUser(info.username(),info.email(),info.passwordHash());
 	}
 }
