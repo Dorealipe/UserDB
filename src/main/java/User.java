@@ -37,12 +37,22 @@ public class User {
 		return new User(found);
 	}
 
+	public void updateEmail(String newEmail) {
+		Database.updateEmail(this.info.username(), newEmail);
+		this.info = Database.findUser(this.info.username());
+	}
+	public void updatePassword(String newPassword) {
+		Database.updatePassword(this.info.username(), newPassword);
+		this.info = Database.findUser(this.info.username());
+	}
+
 	public String username() {return info.username();}
 	public String email() {return info.email();}
 	public String passwordHash() {return info.passwordHash();}
 	public String emailType() {
 		return info.emailType();
 	}
+	public String createdAt() {return info.createdAt();}
 
 
 
