@@ -3,6 +3,7 @@ import java.util.Scanner;
 void main() {
 	Scanner scanner = new Scanner(System.in);
 	Database.initialize();
+	Database.initializeNotes();
 	boolean running = true;
 	User user = null;
 	String stage = "";
@@ -130,6 +131,7 @@ void main() {
 			write("1) View profile");
 			write("2) Edit profile");
 			write("3) Set up timer");
+			write("4) Manage notes");
 			write("L) Log out");
 			write("E) Exit");
 			String choice = input(scanner);
@@ -199,6 +201,109 @@ void main() {
 					}
 					setTimer(parseTimes(time), name).start();
 
+				}
+				case "4" -> {
+					boolean inNoteMenu = true;
+					while (inNoteMenu) {
+						write("~~~ My Notes ~~~");
+						List<NoteInfo> notes = user.getNotes();
+						if (notes.isEmpty()) {
+							write("No notes yet");
+						} else {
+							for (NoteInfo note : notes) {
+								write(note.id() + ") " + note);
+							}
+						}
+						write("1) Add   2) Toggle done   3) Delete   B) Back");
+						String noteChoice = input(scanner).toLowerCase();
+						switch (noteChoice) {
+							case "1" -> {
+								boolean isTask = false;
+								String message = "";
+								substage = "add_note.isTask";
+								while (substage.equals("add_note.isTask")) {
+									write("Is this a task (1) or a note (2)");
+									String isTaskInput = input(scanner);
+									switch (isTaskInput.toLowerCase()) {
+										case "1" -> {
+											isTask = true;
+											substage = "add_note.message";
+										}
+										case "2" -> {
+											isTask = false;
+											substage = "add_note.message";
+										}
+										case null, default -> {
+											write("Invalid option");
+										}
+
+									}
+								}
+								while (substage.equals("add_note.message")) {
+									write("Input the content of the note");
+									message = input(scanner);
+									if (!message.isEmpty()) {
+										substage = "";
+									} else {
+										write("Note cannot be empty");
+									}
+								}
+								user.addTask(message, isTask);
+								write("Added!");
+							}
+							case "2" -> {
+								substage = "toggle_note";
+								while (substage.equals("toggle_note")) {
+									write("Write the id to toggle");
+									String inputId = input(scanner);
+									if (inputId.equalsIgnoreCase("back")) {
+										substage = "";
+										break;
+									}
+									try {
+										int id = Integer.parseInt(inputId);
+										NoteInfo target = notes.stream().filter(n -> n.id() == id).findFirst().orElse(null);
+										if (target == null) {
+											write("Note not found");
+										} else if (!target.isTask()) {
+											write("This is a note, not a task — can't toggle done");
+										} else {
+											Database.setTaskDone(id, !target.done());
+											write("Toggled!");
+											substage = "";
+										}
+									} catch (NumberFormatException e) {
+										write("Invalid id");
+									}
+								}
+							}
+							case "3" -> {
+								int id;
+								substage = "del_note";
+								while (substage.equals("del_note")) {
+									write("Write the id to delete");
+									String inputId = input(scanner);
+									if (inputId.equalsIgnoreCase("back")) {
+										substage = "";
+										break;
+									}
+									try {
+										id = Integer.parseInt(inputId);
+										Database.deleteNote(id);
+										write("Deleted!");
+										substage = "";
+
+									} catch (NumberFormatException e) {
+										write("Invalid id");
+									}
+								}
+							}
+							case "b" -> {
+								inNoteMenu = false;
+							}
+							default -> write("Invalid choice");
+						}
+					}
 				}
 				case "l" -> {
 					user = null;

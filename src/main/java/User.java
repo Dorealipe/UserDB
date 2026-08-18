@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class User {
 	private UserInfo info;
 
@@ -58,6 +60,14 @@ public class User {
 
 	void printUserInfo() {
 		System.out.println(info);
+	}
+
+	public void addTask(String content, boolean isTask) {
+		Database.insertNote(this.username(), content, isTask);
+	}
+
+	public List<NoteInfo> getNotes() {
+		return Database.findNotesByUser(this.username());
 	}
 
 }
