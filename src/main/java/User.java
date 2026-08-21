@@ -4,7 +4,7 @@ public class User {
 	private UserInfo info;
 
 	public static Boolean userExists(String username) {
-		return Database.userExists(username);
+		return Database.Users.userExists(username);
 	}
 
 	public User(String name, String password) {
@@ -16,8 +16,8 @@ public class User {
 			throw new ExceptionInInitializerError(String.format("User with username \"%s\" already exists.", name));
 		}
 		this.info = new UserInfo(name, email, HashManager.hash(password), null);
-		Database.insertUser(this.info);
-		this.info = Database.findUser(name);
+		Database.Users.insert(this.info);
+		this.info = Database.Users.findUser(name);
 	}
 
 	/// Used only in logging
@@ -31,7 +31,7 @@ public class User {
 		if (!userExists(username)) {
 			return null;
 		}
-		UserInfo found = Database.findUser(username);
+		UserInfo found = Database.Users.findUser(username);
 		if (found == null) return null;
 		if (!HashManager.verify(password, found.passwordHash())) {
 			throw new SecurityException("Wrong password");
@@ -40,12 +40,12 @@ public class User {
 	}
 
 	public void updateEmail(String newEmail) {
-		Database.updateEmail(this.info.username(), newEmail);
-		this.info = Database.findUser(this.info.username());
+		Database.Users.updateEmail(this.info.username(), newEmail);
+		this.info = Database.Users.findUser(this.info.username());
 	}
 	public void updatePassword(String newPassword) {
-		Database.updatePassword(this.info.username(), newPassword);
-		this.info = Database.findUser(this.info.username());
+		Database.Users.updatePassword(this.info.username(), newPassword);
+		this.info = Database.Users.findUser(this.info.username());
 	}
 
 	public String username() {return info.username();}
@@ -62,12 +62,14 @@ public class User {
 		System.out.println(info);
 	}
 
-	public void addTask(String content, boolean isTask) {
-		Database.insertNote(this.username(), content, isTask);
+	public void addNote(String content, boolean isTask) {
+		Database.Notes.insert(this.username(), content, isTask);
 	}
 
 	public List<NoteInfo> getNotes() {
-		return Database.findNotesByUser(this.username());
+		return Database.Notes.findByUser(this.username());
 	}
+
+	public List<TimerInfo> getTimers() { return Database.Timers.findByUser(this.username()); }
 
 }
